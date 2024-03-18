@@ -1,32 +1,43 @@
 import { Router } from "express";
-import { cart } from "../Index";
+import CartManager from "../utils/cartManager.js";
 
-const cartRouter = Router();
+const router = Router();
 
-cartRouter.post ('/', async (req , res )=> {
-    try{
-        const response = await cart.newcart()
-        res.json(response)
-    }catch(error){
-    res.send('Error al crear el carrito')
-}})
+const cartManagerInstance = new CartManager("data/carts.json");
 
-cartRouter.post ('/:cid', async (req,res )=> {
-    const {cid} = req.params;
+router.post("/", async (req, res) => {
+  try {
+    await cartManagerInstance.addCart();
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ status: "error", error: "Ocurrio un error" });
+  }
 
-    try{
-        const response = await cart.getcartProducts(cid)
-        res.json(response)
-    }catch(error){
-    res.send('Error al enviar productos a el carrito')
-}})
-cartRouter.post ('/:cid/products/:pid', async (req,res ) => {
-    const {cid,pid }= req.params;
-    try{
-       await cart.addProductCart(cid,pid)
-       res.send('Producto agregado exitosamente')
-    }catch(error){
-    res.send('Error al crear el carrito')
-}})
+  res.send({ status: "success", message: "El carrito fue creado exitosamente" });
+});
 
-export {cartRouter}
+router.post("/:cid/product/:pid", async (req, res) => {
+  const cartId = +req.params.cid;
+  const productId = req.params.pid;
+
+  try {
+    await cartManagerInstance.addProductToCart(cartId, productId);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ status: "error", error: "Ocurrio un error" });
+  }
+  res.send({ status: "success", message: "producto agregado al carrito exitosamente" });
+});
+
+router.get("/:cid", async (req, res) => {
+  const cartId = +req.params.cid;
+  const cart = await cartManagerInstance.getCart(cartId);
+  if (!cart) {
+    return res
+      .status(400)
+      .send({ status: "error", error: "Ocurrio un error" });
+  }
+  res.send({ cart });
+});
+
+export default router;

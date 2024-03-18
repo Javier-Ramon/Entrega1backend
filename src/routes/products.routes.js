@@ -1,62 +1,75 @@
 import { Router } from "express";
-import { ProductManager, productManager } from "./Index.js";
+import ProductManager from "../utils/productManager.js";
 
-const productsRouter = Router ()
+const router = Router();
 
-productsRouter.get ('/', async(req,res) =>{
-    try{
-        const {Limit} =req.query;
-        const products = await ProductManager.getProducts()
+const productManagerInstance = new ProductManager("data/products.json");
 
-        if (Limit){
-            const limiteProducts= products.slice(0,Limit)
-            return res.json ( limiteProducts)
-        }
-    }catch (error) {
-        console.log(error);
-        res.send('ERROR AL INTENTAR RECIBIR LOS PRODUCTOS')
-    }
-})
-productsRouter.get ('/:pid', async(req,res) =>{
-    try{
-    const {pid}  = req.params;
-    const products = await ProductManager.getProductsById(pid)
-    res.json(products)
-    }catch (error) {
-       console.log(error);
-       res.send("ERROR AL INTENTAR RECIBIR LOS PRODUCTOS CON ID , ${pid}")
-    }
-})
-productsRouter.post('/', async (req,res)=>{
-    try{
-        const {title, description,price,code,thumbnail,stock,status = true ,category} = req.body;
-        const response = await productManager.addproduct({title, description,price,code,thumbnail,stock,status,category})
-        res.json(response)
-    }catch(error){
-        console.log(error);
-        res.send("ERROR AL  AGREGAR LOS PRODUCTOS  ")
-    }
-})
-productsRouter.put('/:pid', async (req,res)=>{
-     const{pid} = req.params
-    try{
-        const {title, description,price,code,thumbnail,stock,status = true ,category} = req.body;
-        const response = await productManager.updateProduct(pid,{title, description,price,code,thumbnail,stock,status,category})
-        res.json(response)
-    }catch(error){
-        console.log(error);
-        res.send("ERROR AL  EDITAR LOS PRODUCTOS CON EL ID , ${pid}")
-    }
-})
+router.get("/", async (req, res) => {
+  let limit = +req.query.limit;
+  const products = await productManagerInstance.getProducts(limit);
+  res.render("home", {
+    style: "index.css",
+    products: products,
+    layout: "products",
+  });
+});
 
-productsRouter.delete('/:pid', async (req,res)=>{
-    const{pid} = req.params
-   try{
-       await productManager.deleteProduct(pid)
-       res.send('PRODUCTO ELIMINADO EXITOSAMENTE')
-   }catch(error){
-       console.log(error);
-       res.send("ERROR AL  ELIMINAR LOS PRODUCTOS CON EL ID , ${pid}")
-   }
-})
-export {productsRouter}
+router.get("/:productId", async (req, res) => {
+  let productId = +req.params.productId;
+  let product = await productManagerInstance.getProductById(productId);
+
+  if (!product) {
+    return res.send({ error: "Producto no se pudo encontrar " });
+  }
+  res.send({ product });
+});
+
+router.post("/", async (req, res) => {
+  const { title, description, code, price, stock, category } = req.body;
+
+  try {
+    await productManagerInstance.addProduct({
+      title,
+      description,
+      code,
+      price,
+      status: true,
+      stock,
+      category,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ status: "error", error: "Ocurrio un error " });
+  }
+  res.send({ status: "success", message: "producto  correctamente agregado" });
+});
+
+router.put("/:productId", async (req, res) => {
+  const productId = +req.params.productId;
+  const productData = req.body;
+
+  try {
+    await productManagerInstance.updateProduct(productId, productData);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ status: "error", error: "Ocurrio un error" });
+  }
+
+  res.send({ status: "success", message: "producto correctamente editado" });
+});
+
+router.delete("/:productId", async (req, res) => {
+  const productId = +req.params.productId;
+
+  try {
+    await productManagerInstance.deleteProduct(productId);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ status: "error", error: "Ocurrio un error " });
+  }
+
+  res.send({ status: "success", message: "producto correctamente eliminado" + productId });
+});
+
+export default router;
