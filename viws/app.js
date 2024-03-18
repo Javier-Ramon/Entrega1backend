@@ -1,10 +1,10 @@
 import express from "express";
 import handlebars from "express-handlebars";
-import cartsRouter from "./routes/carts.router.js";
-import productsRouter from "./routes/products.router.js";
+import cartsRouter from "../src/routes/carts_routes.js";
+import productsRouter from "../src/routes/products.routes.js";
 import { Server } from "socket.io";
 import { __dirname } from "./utils.js";
-import ProductManager from "./utils/productManager.js";
+import ProductManager from "../util/ProductManager.js";
 
 const app = express();
 const productManagerInstance = new ProductManager("data/products.json");
