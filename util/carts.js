@@ -47,25 +47,25 @@ export default class CartManager {
   addProductToCart(cartid, productId, quantity = 1) {
     const cart = this.cart.find((cart) => cart.id == cartid);
     if (cart) {
-      const existingProductIndex = cart.products.findIndex(
-        (product) => product.product === productId
-      );
-      if (existingProductIndex !== -1) {
-        cart.products[existingProductIndex].quantity += quantity;
-      } else {
-        cart.products.push({
-          product: productId,
-          quantity: quantity,
-        });
+        const existingProductIndex = cart.products.findIndex(
+            (product) => product.product === productId
+        );
+        if (existingProductIndex !== -1) {
+            cart.products[existingProductIndex].quantity += quantity;
+        } else {
+            cart.products.push({
+                product: productId,
+                quantity: quantity,
+            });
 
-        this.saveCart();
-        return cart;
-      }
+            this.saveCart();
+            return cart;
+        }
     } else {
-      console.error("carrito no encontrado");
-      return;
+        throw new Error("Carrito no encontrado");
     }
-  }
+}
+
 
   getCart(id) {
     const cart = this.cart.find((cart) => cart.id == id);

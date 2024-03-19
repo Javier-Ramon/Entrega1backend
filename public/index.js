@@ -15,7 +15,7 @@ function addProduct() {
   formData.append("code", document.getElementById("code").value);
   formData.append("stock", document.getElementById("stock").value);
   formData.append("category", document.getElementById("category").value);
-  formData.append("thumbnails", document.getElementById("thumbnails").files[0]);
+  formData.append("thumbnails", document.getElementById("thumbnail").files[0]); 
 
   socket.emit("addProduct", formData);
 
@@ -23,7 +23,7 @@ function addProduct() {
   document.getElementById("title").value = "";
   document.getElementById("description").value = "";
   document.getElementById("price").value = "";
-  document.getElementById("thumbnails").value = "";
+  document.getElementById("thumbnail").value = ""; 
   document.getElementById("code").value = "";
   document.getElementById("stock").value = "";
   document.getElementById("category").value = "";
